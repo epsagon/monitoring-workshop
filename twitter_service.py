@@ -35,10 +35,13 @@ def get_top_tweet(event, _context):
         result_type='mixed',
         since=since_time,
     )
-    body = json.dumps({
-        'screen_name': top_tweet[0].user.screen_name,
-        'tweet': top_tweet[0].text,
-        })
+    if not top_tweet:
+        body = None
+    else:
+        body = json.dumps({
+            'screen_name': top_tweet[0].user.screen_name,
+            'tweet': top_tweet[0].text,
+            })
     return {
         'statusCode': 200,
         'body': body,
