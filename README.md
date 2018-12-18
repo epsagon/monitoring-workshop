@@ -1,6 +1,6 @@
-## Second Step - Simple Storage
+## Third Step - Cron Job to scan topics
 
-In this stage we will create a simple storage (S3) to save data between invocations.
+Creates a lambda that is invoked every 5 minutes that will scan all topics from S3 and save new top tweets to a dynamoDB
 
 ## Install Dependencies:
 

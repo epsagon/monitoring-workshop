@@ -6,6 +6,8 @@ custom:
       - '-'
       - - topics-bucket
         - Ref: AWS::AccountId
+  influencingTweeters: influencing-tweeters
+  newInfluencerQueue: influencers-queue
 
 package:
   exclude:
@@ -37,6 +39,23 @@ provider:
                       - - topics-bucket
                         - Ref: AWS::AccountId
                   - '*'
+    - Effect: "Allow"
+      Action:
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:Query
+        - dynamodb:DescribeTable
+      Resource:
+        Fn::GetAtt:
+          - InfluencersTable
+          - Arn
+    - Effect: "Allow"
+      Action:
+        - sqs:SendMessage
+      Resource:
+        Fn::GetAtt:
+          - NewInfluencerQueue
+          - Arn
 
 functions:
   get-top-tweet:
@@ -50,7 +69,7 @@ functions:
       CONSUMER_SECRET: ${env:CONSUMER_SECRET}
       ACCESS_TOKEN_KEY: ${env:ACCESS_TOKEN_KEY}
       ACCESS_TOKEN_SECRET: ${env:ACCESS_TOKEN_SECRET}
-    memorySize: 512
+    memorySize: 256
     timeout: 3
 
   add-topic:
@@ -61,6 +80,38 @@ functions:
           method: post
     environment:
       TOPICS_BUCKET_NAME: ${self:custom.topicsBucketName}
+    memorySize: 128
+    timeout: 3
+
+  scan-all-topics:
+    handler: handler.scan_all_topics
+    events:
+      - schedule: rate(5 minutes)
+    environment:
+      INFLUENCERS_TABLE_NAME: ${self:custom.influencingTweeters}
+      TOPICS_BUCKET_NAME: ${self:custom.topicsBucketName}
+      NEW_INFLUENCER_SQS:
+        Ref: NewInfluencerQueue
+      TWITTER_SERVICE_API:
+        Fn::Join:
+          - ""
+          - - "https://"
+            - Ref: ApiGatewayRestApi
+            - ".execute-api."
+            - ${self:provider.region}
+            - ".amazonaws.com/"
+            - ${self:provider.stage}
+            - "/top_tweet"
+
+  new-influencer:
+    handler: notifications_handler.alert
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - NewInfluencerQueue
+              - Arn
+          batchSize: 1
 
 resources:
   Resources:
@@ -68,6 +119,27 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:custom.topicsBucketName}
+
+    InfluencersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.influencingTweeters}
+        AttributeDefinitions:
+          - AttributeName: influencer_name
+            AttributeType: S
+          - AttributeName: topic
+            AttributeType: S
+        KeySchema:
+          - AttributeName: influencer_name
+            KeyType: HASH
+          - AttributeName: topic
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+
+    NewInfluencerQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:custom.newInfluencerQueue}
 
 plugins:
   - serverless-python-requirements
