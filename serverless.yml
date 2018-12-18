@@ -1,0 +1,30 @@
+service: monitoring-workshop
+
+package:
+  exclude:
+    - 'node_modules/**'
+    - 'venv/**'
+    - '__pycache__/**'
+
+provider:
+  name: aws
+  runtime: python3.6
+  region: eu-west-1
+  stage: ${opt:stage, 'dev'}
+
+functions:
+  get-top-tweet:
+    handler: twitter_service.get_top_tweet
+    events:
+      - http:
+          path: top_tweet
+          method: post
+    environment:
+      CONSUMER_KEY: ${env:CONSUMER_KEY}
+      CONSUMER_SECRET: ${env:CONSUMER_SECRET}
+      ACCESS_TOKEN_KEY: ${env:ACCESS_TOKEN_KEY}
+      ACCESS_TOKEN_SECRET: ${env:ACCESS_TOKEN_SECRET}
+
+plugins:
+  - serverless-python-requirements
+  - serverless-dotenv-plugin
