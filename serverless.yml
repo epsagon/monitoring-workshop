@@ -56,6 +56,22 @@ provider:
         Fn::GetAtt:
           - NewInfluencerQueue
           - Arn
+    - Effect: "Allow"
+      Action:
+        - lambda:InvokeFunction
+        - lambda:InvokeAsync
+      Resource:
+        Fn::Join:
+          - ":"
+          - - "arn:aws:lambda"
+            - ${self:provider.region}
+            - Ref: AWS::AccountId
+            - "function"
+            - Fn::Join:
+              - '-'
+              - - ${self:service}
+                - ${self:provider.stage}
+                - "scan-topic"
 
 functions:
   get-top-tweet:
@@ -92,6 +108,11 @@ functions:
       TOPICS_BUCKET_NAME: ${self:custom.topicsBucketName}
       NEW_INFLUENCER_SQS:
         Ref: NewInfluencerQueue
+
+  scan-topic:
+    handler: handler.scan_topic
+    environment:
+      INFLUENCERS_TABLE_NAME: ${self:custom.influencingTweeters}
       TWITTER_SERVICE_API:
         Fn::Join:
           - ""

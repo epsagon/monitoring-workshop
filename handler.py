@@ -5,12 +5,13 @@ import os
 import json
 import boto3
 import botocore
-import requests
 from influencer_model import Influencer
+from twitter_service import get_top_tweet
 
 S3_RESOURCE = boto3.resource('s3')
 TOPICS_LIST_KEY = 'topics_names_list/topics_list.csv'
 SQS_CLIENT = boto3.client('sqs')
+LAMBDA_CLIENT = boto3.client('lambda')
 
 
 def add_from_api_gateway(event, _):
@@ -45,25 +46,25 @@ def scan_all_topics(_event, _):
         topics_bucket_name, TOPICS_LIST_KEY)
     topics_list = _get_topics_list(topics_names_obj)
     for topic in topics_list:
-        scan_topic(topic.decode('utf-8'))
+        LAMBDA_CLIENT.invoke_async(
+            FunctionName='monitoring-workshop-dev-scan-topic',
+            InvokeArgs=json.dumps({'topic': topic.decode('utf-8')}),
+        )
 
 
-def scan_topic(topic):
+def scan_topic(event, _):
     """
     scan a specific topic
     write top tweet and twitter to dynamodb
     """
+    topic = event['topic']
     print(f'entering scan_topic with topic = {topic}')
-    url = os.getenv('TWITTER_SERVICE_API')
-    response = requests.post(url, data=topic)
-    try:
-        top_tweet = response.json()
-    except ValueError:
-        top_tweet = None
-    if not top_tweet:
+    top_tweet_raw = get_top_tweet({'body': topic}, None)['body']
+    if not top_tweet_raw:
         print(f'No tweet was found for topic = {topic}')
         return
 
+    top_tweet = json.loads(top_tweet_raw)
     influencer = top_tweet['screen_name']
 
     if not Influencer.exists(influencer, topic):
