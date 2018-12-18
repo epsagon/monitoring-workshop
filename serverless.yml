@@ -19,6 +19,25 @@ provider:
   region: eu-west-1
   stage: ${opt:stage, 'dev'}
 
+  iamRoleStatements:
+    # S3 permissions:
+    - Effect: "Allow"
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+      Resource:
+        Fn::Join:
+          - ':'
+          - - 'arn:aws:s3:'
+            - '*'
+            - Fn::Join:
+                - '/'
+                - - Fn::Join:
+                      - '-'
+                      - - topics-bucket
+                        - Ref: AWS::AccountId
+                  - '*'
+
 functions:
   get-top-tweet:
     handler: twitter_service.get_top_tweet
