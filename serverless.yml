@@ -1,5 +1,12 @@
 service: monitoring-workshop
 
+custom:
+  topicsBucketName:
+    Fn::Join:
+      - '-'
+      - - topics-bucket
+        - Ref: AWS::AccountId
+
 package:
   exclude:
     - 'node_modules/**'
@@ -24,6 +31,24 @@ functions:
       CONSUMER_SECRET: ${env:CONSUMER_SECRET}
       ACCESS_TOKEN_KEY: ${env:ACCESS_TOKEN_KEY}
       ACCESS_TOKEN_SECRET: ${env:ACCESS_TOKEN_SECRET}
+    memorySize: 512
+    timeout: 3
+
+  add-topic:
+    handler: handler.add_from_api_gateway
+    events:
+      - http:
+          path: add_topic
+          method: post
+    environment:
+      TOPICS_BUCKET_NAME: ${self:custom.topicsBucketName}
+
+resources:
+  Resources:
+    S3BucketTopicsbucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.topicsBucketName}
 
 plugins:
   - serverless-python-requirements
