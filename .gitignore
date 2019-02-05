@@ -1,3 +1,5 @@
 node_modules
 venv
 package-lock.json
+.serverless
+__pycache__
