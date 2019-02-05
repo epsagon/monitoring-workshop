@@ -1,6 +1,9 @@
 service: monitoring-workshop
 
 custom:
+  epsagon:
+    token: ${env:EPSAGON_TOKEN}
+    appName: monitoring-workshop
   topicsBucketName:
     Fn::Join:
       - '-'
@@ -165,3 +168,4 @@ resources:
 plugins:
   - serverless-python-requirements
   - serverless-dotenv-plugin
+  - serverless-plugin-epsagon
