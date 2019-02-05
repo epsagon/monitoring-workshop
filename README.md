@@ -1,15 +1,15 @@
-## Fourth Step - Async Message Sending
+## Fifth Step - Epsagon Monitoring
 
-Split bottleneck load to multiple functions
+Adding Epsagon that allows us to monitor and troubleshoot distributed applications easily.
+
+## Install Dependencies:
+
+```
+npm install serverless-plugin-epsagon
+pip install -r requirements.txt
+```
 
 ## Deploy:
 ```
 sls deploy
-```
-
-## Using the API:
-When deploying with sls you will see the rest api uid, which you have to use here:
-
-```
-curl -X POST -d serverless https://<YOUR-REST-API-UID>.execute-api.eu-west-1.amazonaws.com/dev/add_topic
 ```
