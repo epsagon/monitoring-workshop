@@ -12,6 +12,8 @@ It will be deployed on AWS with serverless framework, but the principals are uni
 ## Deploying Steps
 
 ```
-git check BRANCH_NAME
-sls deploy
+git clone git@github.com:epsagon/monitoring-workshop.git
+git branch -a
+git checkout <BRANCH_NAME>
+cat README.md
 ```
