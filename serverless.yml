@@ -116,6 +116,8 @@ functions:
     handler: handler.scan_topic
     environment:
       INFLUENCERS_TABLE_NAME: ${self:custom.influencingTweeters}
+      NEW_INFLUENCER_SQS:
+        Ref: NewInfluencerQueue
       TWITTER_SERVICE_API:
         Fn::Join:
           - ""
