@@ -5,7 +5,7 @@ This will create a simple Lambda function behind an API Gateway that will look f
 ## Install Dependencies:
 
 ```
-npm install serverless serverless-python-requirements serverless-dotenv-plugin
+npm install serverless serverless-python-requirements serverless-dotenv-plugin serverless-pseudo-parameters
 pip install -r requirements.txt
 ```
 
