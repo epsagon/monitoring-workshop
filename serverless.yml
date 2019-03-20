@@ -25,18 +25,7 @@ provider:
       Action:
         - s3:GetObject
         - s3:PutObject
-      Resource:
-        Fn::Join:
-          - ':'
-          - - 'arn:aws:s3:'
-            - '*'
-            - Fn::Join:
-                - '/'
-                - - Fn::Join:
-                      - '-'
-                      - - topics-bucket
-                        - Ref: AWS::AccountId
-                  - '*'
+      Resource: arn:aws:s3::*:topics-bucket-#{AWS::AccountId}/*
 
 functions:
   get-top-tweet:
@@ -72,3 +61,4 @@ resources:
 plugins:
   - serverless-python-requirements
   - serverless-dotenv-plugin
+  - serverless-pseudo-parameters
